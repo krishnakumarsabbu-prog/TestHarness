@@ -1,12 +1,12 @@
 function AlertsOnboarding() {
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Alerts Onboarding</h1>
-        <p className="mt-1 text-sm text-gray-500">Onboard users to the alerts system.</p>
+      <div className="mb-8">
+        <h1 className="page-title">Alerts Onboarding</h1>
+        <p className="page-subtitle">Onboard users to the alerts system.</p>
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-sm text-gray-400">
-        Content coming soon
+      <div className="card p-12 text-center">
+        <p className="text-sm text-slate-400 font-medium">Content coming soon</p>
       </div>
     </div>
   )

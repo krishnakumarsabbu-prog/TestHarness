@@ -64,21 +64,21 @@ function Sidebar() {
 
   return (
     <aside
-      className={`relative flex flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out shrink-0 ${
-        collapsed ? 'w-16' : 'w-60'
+      className={`relative flex flex-col bg-white border-r border-surface-200 shadow-soft-sm transition-all duration-300 ease-in-out shrink-0 ${
+        collapsed ? 'w-16' : 'w-64'
       }`}
     >
       <div
-        className={`flex items-center h-16 px-3 border-b border-gray-100 ${
+        className={`flex items-center h-16 px-3 border-b border-surface-100 ${
           collapsed ? 'justify-center' : 'justify-between'
         }`}
       >
         {!collapsed && (
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Menu</span>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest pl-1">Navigation</span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-surface-100 transition-colors"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <svg
@@ -97,16 +97,16 @@ function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 py-3 space-y-0.5 px-2 overflow-hidden">
+      <nav className="flex-1 py-4 space-y-0.5 px-3 overflow-hidden">
         {navItems.map(({ label, icon, path }) => (
           <NavLink
             key={path}
             to={path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                  ? 'bg-primary-50 text-primary-700 shadow-soft-sm'
+                  : 'text-slate-500 hover:bg-surface-100 hover:text-slate-800'
               } ${collapsed ? 'justify-center' : ''}`
             }
             title={collapsed ? label : undefined}
