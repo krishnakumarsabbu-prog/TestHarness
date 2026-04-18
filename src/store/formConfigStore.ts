@@ -31,8 +31,17 @@ export interface SavedFormConfig {
   updatedAt: string
 }
 
+export interface AlertFormMapping {
+  id: string
+  alertType: string
+  sourceType: string
+  formId: string
+  createdAt: string
+}
+
 const STORAGE_KEY = 'alert_form_configs'
 const ACTIVE_KEY = 'alert_form_active_id'
+const MAPPINGS_KEY = 'alert_form_mappings'
 
 export function loadFormConfigs(): SavedFormConfig[] {
   try {
@@ -57,6 +66,27 @@ export function saveActiveFormId(id: string | null): void {
   } else {
     localStorage.removeItem(ACTIVE_KEY)
   }
+}
+
+export function loadAlertFormMappings(): AlertFormMapping[] {
+  try {
+    const raw = localStorage.getItem(MAPPINGS_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export function saveAlertFormMappings(mappings: AlertFormMapping[]): void {
+  localStorage.setItem(MAPPINGS_KEY, JSON.stringify(mappings))
+}
+
+export function getFormForAlert(alertType: string, sourceType: string): SavedFormConfig | null {
+  const mappings = loadAlertFormMappings()
+  const configs = loadFormConfigs()
+  const mapping = mappings.find(m => m.alertType === alertType && m.sourceType === sourceType)
+  if (!mapping) return null
+  return configs.find(c => c.id === mapping.formId) ?? null
 }
 
 export function generateId(): string {

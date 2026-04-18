@@ -8,10 +8,16 @@ import {
   saveFormConfigs,
   loadActiveFormId,
   saveActiveFormId,
+  loadAlertFormMappings,
+  saveAlertFormMappings,
   generateId,
   type SavedFormConfig,
   type FormFieldConfig,
+  type AlertFormMapping,
 } from '../store/formConfigStore'
+
+const ALERT_TYPES = ['Fraud', 'Risk', 'Compliance', 'Operational', 'Security', 'Performance']
+const SOURCE_TYPES = ['Kafka', 'MQ', 'WebService', 'Batch']
 
 function emptyField(): FormFieldConfig {
   return {
@@ -34,10 +40,13 @@ function emptyConfig(): Omit<SavedFormConfig, 'id' | 'createdAt' | 'updatedAt'> 
   }
 }
 
-type ViewMode = 'list' | 'builder' | 'preview'
+type MainTab = 'forms' | 'configurations'
+type ViewMode = 'list' | 'builder'
 
 function Settings() {
   const navigate = useNavigate()
+  const [mainTab, setMainTab] = useState<MainTab>('forms')
+
   const [configs, setConfigs] = useState<SavedFormConfig[]>(() => loadFormConfigs())
   const [activeId, setActiveId] = useState<string | null>(() => loadActiveFormId())
   const [view, setView] = useState<ViewMode>('list')
@@ -48,13 +57,14 @@ function Settings() {
   const [saved, setSaved] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  useEffect(() => {
-    saveFormConfigs(configs)
-  }, [configs])
+  const [mappings, setMappings] = useState<AlertFormMapping[]>(() => loadAlertFormMappings())
+  const [mappingDraft, setMappingDraft] = useState({ alertType: '', sourceType: '', formId: '' })
+  const [mappingErrors, setMappingErrors] = useState<Record<string, string>>({})
+  const [mappingDeleteConfirm, setMappingDeleteConfirm] = useState<string | null>(null)
 
-  useEffect(() => {
-    saveActiveFormId(activeId)
-  }, [activeId])
+  useEffect(() => { saveFormConfigs(configs) }, [configs])
+  useEffect(() => { saveActiveFormId(activeId) }, [activeId])
+  useEffect(() => { saveAlertFormMappings(mappings) }, [mappings])
 
   const startNew = () => {
     setEditingId(null)
@@ -114,6 +124,7 @@ function Settings() {
   const handleDelete = (id: string) => {
     setConfigs(prev => prev.filter(c => c.id !== id))
     if (activeId === id) setActiveId(null)
+    setMappings(prev => prev.filter(m => m.formId !== id))
     setDeleteConfirm(null)
   }
 
@@ -141,19 +152,72 @@ function Settings() {
     })
   }
 
+  const validateMapping = () => {
+    const errs: Record<string, string> = {}
+    if (!mappingDraft.alertType) errs.alertType = 'Alert type is required'
+    if (!mappingDraft.sourceType) errs.sourceType = 'Source type is required'
+    if (!mappingDraft.formId) errs.formId = 'Form is required'
+    const duplicate = mappings.find(
+      m => m.alertType === mappingDraft.alertType && m.sourceType === mappingDraft.sourceType
+    )
+    if (duplicate) errs.duplicate = `A mapping for ${mappingDraft.alertType} + ${mappingDraft.sourceType} already exists`
+    setMappingErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  const handleAddMapping = () => {
+    if (!validateMapping()) return
+    const newMapping: AlertFormMapping = {
+      id: generateId(),
+      alertType: mappingDraft.alertType,
+      sourceType: mappingDraft.sourceType,
+      formId: mappingDraft.formId,
+      createdAt: new Date().toISOString(),
+    }
+    setMappings(prev => [...prev, newMapping])
+    setMappingDraft({ alertType: '', sourceType: '', formId: '' })
+    setMappingErrors({})
+  }
+
+  const handleDeleteMapping = (id: string) => {
+    setMappings(prev => prev.filter(m => m.id !== id))
+    setMappingDeleteConfirm(null)
+  }
+
   const inputBase =
     'w-full px-3.5 py-2.5 rounded-xl border border-surface-300 bg-white text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all duration-150'
 
+  const selectBase =
+    'w-full px-3.5 py-2.5 rounded-xl border border-surface-300 bg-white text-slate-800 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all duration-150 appearance-none pr-8'
+
   const hasErrors = Object.keys(errors).length > 0
 
+  const tabClass = (active: boolean) =>
+    `px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+      active
+        ? 'bg-white text-slate-800 shadow-sm border border-surface-200'
+        : 'text-slate-500 hover:text-slate-700'
+    }`
+
   return (
-    <PageContainer title="Settings" subtitle="Manage dynamic form configurations for the Alerts Onboarding page.">
+    <PageContainer title="Settings" subtitle="Manage dynamic form configurations and alert onboarding mappings.">
       <div className="flex flex-col gap-6">
         {view === 'list' && (
+          <div className="flex items-center gap-1 bg-surface-100 rounded-xl p-1 w-fit">
+            <button className={tabClass(mainTab === 'forms')} onClick={() => setMainTab('forms')}>
+              Forms
+            </button>
+            <button className={tabClass(mainTab === 'configurations')} onClick={() => setMainTab('configurations')}>
+              Configurations
+            </button>
+          </div>
+        )}
+
+        {view === 'list' && mainTab === 'forms' && (
           <>
             <SectionCard
               title="Form Configurations"
-              description="Create and manage custom forms that appear on the Alerts Onboarding page."
+              description="Create and manage custom forms for the Alerts Onboarding page."
               actions={
                 <Button
                   size="sm"
@@ -178,7 +242,7 @@ function Settings() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-slate-700">No form configurations yet</p>
                     <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-                      Create a custom form to display on the Alerts Onboarding page.
+                      Create a custom form, then map it to an alert type in the Configurations tab.
                     </p>
                   </div>
                   <Button size="sm" onClick={startNew} variant="secondary">
@@ -187,93 +251,290 @@ function Settings() {
                 </div>
               ) : (
                 <div className="divide-y divide-surface-100">
-                  {configs.map(config => (
-                    <div key={config.id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                      <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-                        <svg className="w-4.5 h-4.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                        </svg>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-800 truncate">{config.name}</p>
-                          {activeId === config.id && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-100 text-success-600 text-xs font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success-500" />
-                              Active
-                            </span>
-                          )}
+                  {configs.map(config => {
+                    const mappingCount = mappings.filter(m => m.formId === config.id).length
+                    return (
+                      <div key={config.id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                        <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                          <svg className="w-4.5 h-4.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                          </svg>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          {config.fields.length} field{config.fields.length !== 1 ? 's' : ''}
-                          {config.description && ` · ${config.description}`}
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          variant={activeId === config.id ? 'secondary' : 'ghost'}
-                          onClick={() => handleSetActive(config.id)}
-                          title={activeId === config.id ? 'Deactivate' : 'Set as active form'}
-                        >
-                          {activeId === config.id ? 'Deactivate' : 'Activate'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => startEdit(config)}
-                          icon={
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-                            </svg>
-                          }
-                        >
-                          Edit
-                        </Button>
-                        {deleteConfirm === config.id ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-danger-600 font-medium">Confirm?</span>
-                            <Button size="sm" variant="danger" onClick={() => handleDelete(config.id)}>Yes</Button>
-                            <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm(null)}>No</Button>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-slate-800 truncate">{config.name}</p>
+                            {activeId === config.id && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-100 text-success-600 text-xs font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-success-500" />
+                                Active
+                              </span>
+                            )}
+                            {mappingCount > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
+                                {mappingCount} mapping{mappingCount !== 1 ? 's' : ''}
+                              </span>
+                            )}
                           </div>
-                        ) : (
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {config.fields.length} field{config.fields.length !== 1 ? 's' : ''}
+                            {config.description && ` · ${config.description}`}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant={activeId === config.id ? 'secondary' : 'ghost'}
+                            onClick={() => handleSetActive(config.id)}
+                            title={activeId === config.id ? 'Deactivate' : 'Set as active form'}
+                          >
+                            {activeId === config.id ? 'Deactivate' : 'Activate'}
+                          </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeleteConfirm(config.id)}
+                            onClick={() => startEdit(config)}
                             icon={
-                              <svg className="w-3.5 h-3.5 text-danger-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                               </svg>
                             }
-                          />
-                        )}
+                          >
+                            Edit
+                          </Button>
+                          {deleteConfirm === config.id ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-danger-600 font-medium">Confirm?</span>
+                              <Button size="sm" variant="danger" onClick={() => handleDelete(config.id)}>Yes</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm(null)}>No</Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setDeleteConfirm(config.id)}
+                              icon={
+                                <svg className="w-3.5 h-3.5 text-danger-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                </svg>
+                              }
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </SectionCard>
+          </>
+        )}
+
+        {view === 'list' && mainTab === 'configurations' && (
+          <>
+            <SectionCard
+              title="Alert Form Mappings"
+              description="Map an Alert Type + Source Type combination to a specific form. When a user selects this combination on the Alerts Onboarding page, the mapped form will automatically appear."
+            >
+              {configs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-surface-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                    </svg>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-slate-700">No forms available</p>
+                    <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                      Create a form in the Forms tab first before creating mappings.
+                    </p>
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => setMainTab('forms')}>
+                    Go to Forms
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  <div className="bg-surface-50 rounded-xl p-4 border border-surface-200">
+                    <p className="text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Add New Mapping</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1.5">Alert Type</label>
+                        <div className="relative">
+                          <select
+                            className={`${selectBase} ${mappingErrors.alertType ? 'border-danger-400' : ''}`}
+                            value={mappingDraft.alertType}
+                            onChange={e => {
+                              setMappingDraft(d => ({ ...d, alertType: e.target.value }))
+                              setMappingErrors(prev => { const n = { ...prev }; delete n.alertType; delete n.duplicate; return n })
+                            }}
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`,
+                              backgroundSize: '14px',
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.75rem center',
+                            }}
+                          >
+                            <option value="">Select type</option>
+                            {ALERT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                        {mappingErrors.alertType && <p className="mt-1 text-xs text-danger-600">{mappingErrors.alertType}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1.5">Source Type</label>
+                        <div className="relative">
+                          <select
+                            className={`${selectBase} ${mappingErrors.sourceType ? 'border-danger-400' : ''}`}
+                            value={mappingDraft.sourceType}
+                            onChange={e => {
+                              setMappingDraft(d => ({ ...d, sourceType: e.target.value }))
+                              setMappingErrors(prev => { const n = { ...prev }; delete n.sourceType; delete n.duplicate; return n })
+                            }}
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`,
+                              backgroundSize: '14px',
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.75rem center',
+                            }}
+                          >
+                            <option value="">Select source</option>
+                            {SOURCE_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                        {mappingErrors.sourceType && <p className="mt-1 text-xs text-danger-600">{mappingErrors.sourceType}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1.5">Form</label>
+                        <div className="relative">
+                          <select
+                            className={`${selectBase} ${mappingErrors.formId ? 'border-danger-400' : ''}`}
+                            value={mappingDraft.formId}
+                            onChange={e => {
+                              setMappingDraft(d => ({ ...d, formId: e.target.value }))
+                              setMappingErrors(prev => { const n = { ...prev }; delete n.formId; return n })
+                            }}
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`,
+                              backgroundSize: '14px',
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.75rem center',
+                            }}
+                          >
+                            <option value="">Select form</option>
+                            {configs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          </select>
+                        </div>
+                        {mappingErrors.formId && <p className="mt-1 text-xs text-danger-600">{mappingErrors.formId}</p>}
                       </div>
                     </div>
-                  ))}
+                    {mappingErrors.duplicate && (
+                      <p className="mt-2 text-xs text-danger-600 flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        {mappingErrors.duplicate}
+                      </p>
+                    )}
+                    <div className="mt-3">
+                      <Button
+                        size="sm"
+                        onClick={handleAddMapping}
+                        icon={
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>
+                        }
+                      >
+                        Add Mapping
+                      </Button>
+                    </div>
+                  </div>
+
+                  {mappings.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
+                      <svg className="w-7 h-7 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                      </svg>
+                      <p className="text-sm text-slate-500">No mappings yet. Add one above.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-surface-100">
+                      <div className="grid grid-cols-4 gap-4 pb-2 px-1">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Alert Type</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Source Type</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Mapped Form</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide text-right">Actions</p>
+                      </div>
+                      {mappings.map(mapping => {
+                        const form = configs.find(c => c.id === mapping.formId)
+                        return (
+                          <div key={mapping.id} className="grid grid-cols-4 gap-4 items-center py-3 px-1">
+                            <div>
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium">
+                                {mapping.alertType}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium">
+                                {mapping.sourceType}
+                              </span>
+                            </div>
+                            <div>
+                              {form ? (
+                                <div>
+                                  <p className="text-sm font-medium text-slate-700">{form.name}</p>
+                                  <p className="text-xs text-slate-400">{form.fields.length} field{form.fields.length !== 1 ? 's' : ''}</p>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-danger-500 italic">Form deleted</span>
+                              )}
+                            </div>
+                            <div className="flex justify-end">
+                              {mappingDeleteConfirm === mapping.id ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-danger-600 font-medium">Confirm?</span>
+                                  <Button size="sm" variant="danger" onClick={() => handleDeleteMapping(mapping.id)}>Yes</Button>
+                                  <Button size="sm" variant="ghost" onClick={() => setMappingDeleteConfirm(null)}>No</Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setMappingDeleteConfirm(mapping.id)}
+                                  icon={
+                                    <svg className="w-3.5 h-3.5 text-danger-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                    </svg>
+                                  }
+                                />
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </SectionCard>
 
-            {activeId && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success-50 border border-success-100">
-                <svg className="w-4 h-4 text-success-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-success-700 flex-1">
-                  <span className="font-semibold">{configs.find(c => c.id === activeId)?.name}</span> is active and will appear on the Alerts Onboarding page.
-                </p>
-                <Button size="sm" variant="secondary" onClick={() => navigate('/alerts-onboarding')}>
-                  View Form
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100">
+              <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              </svg>
+              <p className="text-sm text-blue-700">
+                On the Alerts Onboarding page, selecting an Alert Type + Source Type will automatically load the mapped form below the metadata fields.
+              </p>
+              <Button size="sm" variant="secondary" onClick={() => navigate('/alerts-onboarding')}>
+                Try it
+              </Button>
+            </div>
           </>
         )}
 
-        {(view === 'builder' || view === 'preview') && (
+        {view === 'builder' && (
           <>
             <div className="flex items-center gap-3">
               <button
@@ -432,23 +693,20 @@ function Settings() {
                 >
                   Save Form
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setView('list')}
-                >
+                <Button variant="secondary" onClick={() => setView('list')}>
                   Cancel
                 </Button>
                 {editingId && saved && (
                   <Button
                     variant="ghost"
-                    onClick={() => navigate('/alerts-onboarding')}
+                    onClick={() => { setView('list'); setMainTab('configurations') }}
                     icon={
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                       </svg>
                     }
                   >
-                    View on Onboarding
+                    Map to Alert Onboarding
                   </Button>
                 )}
               </div>
