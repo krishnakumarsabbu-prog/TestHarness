@@ -1,15 +1,17 @@
 import { Outlet } from 'react-router-dom'
 import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Sidebar from '../components/Sidebar'
 
 function MainLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
-        <Outlet />
-      </main>
-      <Footer />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }
