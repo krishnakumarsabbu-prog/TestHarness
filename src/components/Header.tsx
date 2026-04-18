@@ -36,7 +36,7 @@ function Header() {
 
         <div className="h-5 w-px bg-surface-200" />
 
-        <button className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-surface-100 transition-colors group">
+        <button className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-surface-100 transition-all duration-150 active:scale-[0.98] group">
           <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center">
             <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />

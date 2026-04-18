@@ -73,9 +73,10 @@ function Sidebar() {
 
   return (
     <aside
-      className={`relative flex flex-col bg-white border-r border-surface-200 shadow-soft-sm transition-all duration-300 ease-in-out shrink-0 ${
+      className={`relative flex flex-col bg-white border-r border-surface-200 shadow-soft-sm shrink-0 overflow-hidden ${
         collapsed ? 'w-16' : 'w-64'
       }`}
+      style={{ transition: 'width 250ms cubic-bezier(0.4,0,0.2,1)' }}
     >
       <div
         className={`flex items-center h-16 px-3 border-b border-surface-100 ${
@@ -83,45 +84,53 @@ function Sidebar() {
         }`}
       >
         {!collapsed && (
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest pl-1">Navigation</span>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest pl-1 whitespace-nowrap">Navigation</span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-surface-100 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-surface-100 transition-all duration-150 active:scale-95"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 transition-transform duration-250"
+            style={{ transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
             viewBox="0 0 24 24"
           >
-            {collapsed ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            )}
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
         </button>
       </div>
 
-      <nav className="flex-1 py-4 space-y-0.5 px-3 overflow-hidden">
+      <nav className="flex-1 py-3 space-y-0.5 px-2 overflow-hidden">
         {navItems.map(({ label, icon, path }) => (
           <NavLink
             key={path}
             to={path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative ${
                 isActive
-                  ? 'bg-primary-50 text-primary-700 shadow-soft-sm'
-                  : 'text-slate-500 hover:bg-surface-100 hover:text-slate-800'
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-slate-500 hover:bg-surface-50 hover:text-slate-800'
               } ${collapsed ? 'justify-center' : ''}`
             }
             title={collapsed ? label : undefined}
           >
-            {icon}
-            {!collapsed && <span className="truncate">{label}</span>}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary-600 rounded-full" />
+                )}
+                <span className={`transition-colors duration-150 ${isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  {icon}
+                </span>
+                {!collapsed && (
+                  <span className="truncate whitespace-nowrap">{label}</span>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

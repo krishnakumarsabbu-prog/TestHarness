@@ -83,7 +83,10 @@ function MultiSelect({
         </button>
 
         {open && (
-          <div className="absolute z-20 top-full mt-1.5 left-0 right-0 bg-white rounded-xl border border-surface-200 shadow-lg overflow-hidden">
+          <div
+            className="absolute z-20 top-full mt-1.5 left-0 right-0 bg-white rounded-xl border border-surface-200 shadow-soft-md overflow-hidden"
+            style={{ animation: 'slideUp 0.12s ease-out both' }}
+          >
             {options.map((option) => {
               const isSelected = selected.includes(option)
               return (
@@ -91,7 +94,7 @@ function MultiSelect({
                   key={option}
                   type="button"
                   onClick={() => toggle(option)}
-                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-left hover:bg-surface-50 transition-colors duration-100"
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-left hover:bg-surface-50 active:bg-surface-100 transition-colors duration-100"
                 >
                   <span
                     className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors duration-150 ${

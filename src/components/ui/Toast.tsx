@@ -52,7 +52,8 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   const styles = typeStyles[toast.type]
   return (
     <div
-      className={`flex items-start gap-3 w-80 p-4 rounded-2xl border shadow-soft-md ${styles.wrapper} animate-in slide-in-from-right-5 fade-in duration-200`}
+      className={`flex items-start gap-3 w-80 p-4 rounded-2xl border shadow-soft-md ${styles.wrapper}`}
+      style={{ animation: 'slideUp 0.2s cubic-bezier(0.34,1.2,0.64,1) both' }}
     >
       <span className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${styles.icon}`}>
         {icons[toast.type]}
@@ -63,7 +64,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       </div>
       <button
         onClick={onDismiss}
-        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/60 transition-colors shrink-0"
+        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/60 transition-all duration-150 active:scale-90 shrink-0"
         aria-label="Dismiss"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

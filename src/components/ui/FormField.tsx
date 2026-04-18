@@ -60,8 +60,15 @@ function FormField(props: FormFieldProps) {
         />
       )}
 
-      {error && <p className="text-xs text-danger-600">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-400">{hint}</p>}
+      {error && (
+        <p className="text-xs text-danger-600 flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          {error}
+        </p>
+      )}
+      {hint && !error && <p className="text-xs text-slate-400 leading-relaxed">{hint}</p>}
     </div>
   )
 }

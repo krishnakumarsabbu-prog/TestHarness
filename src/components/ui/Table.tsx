@@ -60,26 +60,33 @@ function Table<T extends Record<string, unknown>>({
           </thead>
           <tbody className="bg-white divide-y divide-surface-100">
             {loading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <tr key={i}>
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} style={{ opacity: 1 - i * 0.12 }}>
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3">
-                      <div className="h-4 bg-surface-200 rounded animate-pulse" />
+                    <td key={col.key} className="px-4 py-3.5">
+                      <div className="skeleton-shimmer h-4 rounded-lg" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-slate-400">
-                  {emptyMessage}
+                <td colSpan={columns.length} className="px-4 py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-surface-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-slate-400 font-medium">{emptyMessage}</p>
+                  </div>
                 </td>
               </tr>
             ) : (
               data.map((row) => (
                 <tr
                   key={String(row[keyField])}
-                  className="hover:bg-surface-50 transition-colors duration-100"
+                  className="hover:bg-surface-50/70 transition-colors duration-100"
                 >
                   {columns.map((col) => (
                     <td

@@ -45,6 +45,12 @@
     outline-offset: 2px;
     border-radius: 0.25rem;
   }
+
+  * {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 0ms;
+  }
 }
 
 @layer components {
@@ -58,14 +64,14 @@
 
   .btn-primary {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium
-           hover:bg-primary-700 active:bg-primary-800 transition-colors duration-150
-           shadow-soft-sm;
+           hover:bg-primary-700 active:bg-primary-800 transition-all duration-150
+           shadow-soft-sm hover:shadow-soft active:scale-[0.98];
   }
 
   .btn-secondary {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-100 text-slate-700 text-sm font-medium
-           hover:bg-surface-200 active:bg-surface-300 border border-surface-200 transition-colors duration-150
-           shadow-soft-sm;
+           hover:bg-surface-200 active:bg-surface-300 border border-surface-200 transition-all duration-150
+           shadow-soft-sm hover:shadow active:scale-[0.98];
   }
 
   .page-title {
@@ -79,6 +85,44 @@
   .input {
     @apply w-full px-3.5 py-2.5 rounded-xl border border-surface-300 bg-white text-slate-800 text-sm
            placeholder:text-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100
-           transition-colors duration-150;
+           transition-all duration-150 hover:border-slate-400/30;
   }
+
+  .skeleton {
+    @apply bg-surface-200 rounded-lg animate-pulse;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.2s ease-out both;
+  }
+
+  .slide-up {
+    animation: slideUp 0.2s ease-out both;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    theme('colors.surface.100') 25%,
+    theme('colors.surface.200') 50%,
+    theme('colors.surface.100') 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

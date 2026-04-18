@@ -42,10 +42,10 @@ function Tabs({ tabs, defaultTab, onChange, variant = 'underline' }: TabsProps) 
               <button
                 key={tab.id}
                 onClick={() => handleSelect(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 active:scale-[0.97] ${
                   isActive
                     ? 'bg-white text-slate-800 shadow-soft-sm border border-surface-200'
-                    : 'text-slate-500 hover:text-slate-700'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
                 }`}
               >
                 {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
@@ -89,7 +89,7 @@ function Tabs({ tabs, defaultTab, onChange, variant = 'underline' }: TabsProps) 
         })}
       </div>
 
-      <div className="mt-4">{activeTab?.content}</div>
+      <div className="mt-5" style={{ animation: 'fadeIn 0.15s ease-out both' }} key={active}>{activeTab?.content}</div>
     </div>
   )
 }
