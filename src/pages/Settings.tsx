@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer, SectionCard, Button } from '../components/ui'
 import FormFieldEditor from '../components/settings/FormFieldEditor'
@@ -15,6 +15,7 @@ import {
   type FormFieldConfig,
   type AlertFormMapping,
 } from '../store/formConfigStore'
+import { formService } from '../services/formService'
 
 const ALERT_TYPES = ['Fraud', 'Risk', 'Compliance', 'Operational', 'Security', 'Performance']
 const SOURCE_TYPES = ['Kafka', 'MQ', 'WebService', 'Batch']
@@ -66,6 +67,16 @@ function Settings() {
   useEffect(() => { saveActiveFormId(activeId) }, [activeId])
   useEffect(() => { saveAlertFormMappings(mappings) }, [mappings])
 
+  const syncFromApi = useCallback(async () => {
+    try {
+      const [forms, maps] = await Promise.all([formService.getAllForms(), formService.getAllMappings()])
+      if (forms.length > 0) { setConfigs(forms); saveFormConfigs(forms) }
+      if (maps.length > 0) { setMappings(maps); saveAlertFormMappings(maps) }
+    } catch {}
+  }, [])
+
+  useEffect(() => { syncFromApi() }, [syncFromApi])
+
   const startNew = () => {
     setEditingId(null)
     setDraft(emptyConfig())
@@ -94,28 +105,23 @@ function Settings() {
     return Object.keys(errs).length === 0
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return
     const now = new Date().toISOString()
+    const req = { name: draft.name, description: draft.description, fields: draftFields }
     if (editingId) {
-      setConfigs(prev =>
-        prev.map(c =>
-          c.id === editingId
-            ? { ...c, name: draft.name, description: draft.description, fields: draftFields, updatedAt: now }
-            : c
-        )
-      )
+      const updated: SavedFormConfig = { id: editingId, ...req, createdAt: now, updatedAt: now }
+      setConfigs(prev => prev.map(c => c.id === editingId ? updated : c))
+      try { await formService.updateForm(editingId, req) } catch {}
     } else {
-      const newConfig: SavedFormConfig = {
-        id: generateId(),
-        name: draft.name,
-        description: draft.description,
-        fields: draftFields,
-        createdAt: now,
-        updatedAt: now,
-      }
+      const newConfig: SavedFormConfig = { id: generateId(), ...req, createdAt: now, updatedAt: now }
       setConfigs(prev => [...prev, newConfig])
       setEditingId(newConfig.id)
+      try {
+        const saved = await formService.createForm(req)
+        setEditingId(saved.id)
+        setConfigs(prev => prev.map(c => c.id === newConfig.id ? saved : c))
+      } catch {}
     }
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
@@ -126,6 +132,7 @@ function Settings() {
     if (activeId === id) setActiveId(null)
     setMappings(prev => prev.filter(m => m.formId !== id))
     setDeleteConfirm(null)
+    formService.deleteForm(id).catch(() => {})
   }
 
   const handleSetActive = (id: string) => {
@@ -165,7 +172,7 @@ function Settings() {
     return Object.keys(errs).length === 0
   }
 
-  const handleAddMapping = () => {
+  const handleAddMapping = async () => {
     if (!validateMapping()) return
     const newMapping: AlertFormMapping = {
       id: generateId(),
@@ -177,11 +184,16 @@ function Settings() {
     setMappings(prev => [...prev, newMapping])
     setMappingDraft({ alertType: '', sourceType: '', formId: '' })
     setMappingErrors({})
+    try {
+      const saved = await formService.createMapping({ alertType: newMapping.alertType, sourceType: newMapping.sourceType, formId: newMapping.formId })
+      setMappings(prev => prev.map(m => m.id === newMapping.id ? saved : m))
+    } catch {}
   }
 
   const handleDeleteMapping = (id: string) => {
     setMappings(prev => prev.filter(m => m.id !== id))
     setMappingDeleteConfirm(null)
+    formService.deleteMapping(id).catch(() => {})
   }
 
   const inputBase =

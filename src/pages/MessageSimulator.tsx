@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { PageContainer, SectionCard, Tabs, Button, useToast } from '../components/ui'
 import ChannelConfigPanel from './message-simulator/ChannelConfig'
 import PayloadEditor from './message-simulator/PayloadEditor'
 import ResponsePanel from './message-simulator/ResponsePanel'
 import ScenarioPanel from './message-simulator/ScenarioPanel'
 import { simulateSend } from './message-simulator/mockSimulate'
+import { simulationService, toSimulationResponse } from '../services/simulationService'
 import {
   DEFAULT_KAFKA_PAYLOAD,
   DEFAULT_MQ_PAYLOAD,
@@ -149,6 +150,12 @@ function MessageSimulator() {
   })
   const [scenarios, setScenarios] = useState<Scenario[]>(INITIAL_SCENARIOS)
 
+  useEffect(() => {
+    simulationService.getAllScenarios()
+      .then((s) => { if (s.length > 0) setScenarios(s) })
+      .catch(() => {})
+  }, [])
+
   const handleConfigChange = useCallback(
     (channel: ChannelType) => (config: ChannelConfig) => {
       setConfigs((prev) => ({ ...prev, [channel]: config }))
@@ -168,11 +175,13 @@ function MessageSimulator() {
       setSending((prev) => ({ ...prev, [channel]: true }))
       setResponses((prev) => ({ ...prev, [channel]: { status: 'sending', logs: [] } }))
       try {
-        const result = await simulateSend({
-          channel,
-          config: configs[channel],
-          payload: payloads[channel],
-        })
+        let result: SimulationResponse
+        try {
+          const apiRes = await simulationService.send({ channel, config: configs[channel], payload: payloads[channel] })
+          result = toSimulationResponse(apiRes)
+        } catch {
+          result = await simulateSend({ channel, config: configs[channel], payload: payloads[channel] })
+        }
         setResponses((prev) => ({ ...prev, [channel]: result }))
         if (result.status === 'success') {
           toast({ type: 'success', title: 'Message sent', message: result.message })

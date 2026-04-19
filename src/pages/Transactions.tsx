@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { PageContainer, SectionCard } from '../components/ui'
 import TransactionFilters, { DEFAULT_FILTERS, type FilterState } from './transactions/TransactionFilters'
 import MetricCards from './transactions/MetricCards'
 import TransactionsTable from './transactions/TransactionsTable'
 import TransactionDetailDrawer from './transactions/TransactionDetailDrawer'
 import { MOCK_TRANSACTIONS, type Transaction } from './transactions/mockData'
+import { transactionService, type TransactionMetrics } from '../services/transactionService'
 
 type SortField = 'messageId' | 'alertName' | 'channel' | 'status' | 'createdTime' | 'processingTimeMs'
 type SortDir = 'asc' | 'desc'
@@ -19,11 +20,55 @@ function Transactions() {
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null)
   const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [metrics, setMetrics] = useState<TransactionMetrics>({ total: 0, success: 0, failed: 0, pending: 0, slaBreaches: 0 })
+  const [apiAvailable, setApiAvailable] = useState(true)
+
+  const loadMockData = useCallback((pg: number) => {
+    const start = (pg - 1) * PAGE_SIZE
+    setTransactions(MOCK_TRANSACTIONS.slice(start, start + PAGE_SIZE) as unknown as Transaction[])
+    setTotalCount(MOCK_TRANSACTIONS.length)
+    const total = MOCK_TRANSACTIONS.length
+    const success = MOCK_TRANSACTIONS.filter(t => t.status === 'Success').length
+    const failed = MOCK_TRANSACTIONS.filter(t => t.status === 'Failed').length
+    const pending = MOCK_TRANSACTIONS.filter(t => t.status === 'Pending').length
+    const slaBreaches = MOCK_TRANSACTIONS.filter(t => t.processingTimeMs > 3000).length
+    setMetrics({ total, success, failed, pending, slaBreaches })
+  }, [])
+
+  const fetchData = useCallback(async (f: FilterState, pg: number, sf: SortField, sd: SortDir) => {
+    setLoading(true)
+    try {
+      const [result, m] = await Promise.all([
+        transactionService.getAll({
+          inboundSource: f.inboundSource || undefined,
+          messageKeyType: f.messageKeyType || undefined,
+          channel: f.channels.length === 1 ? f.channels[0] : undefined,
+          dateFrom: f.dateFrom ? new Date(f.dateFrom).toISOString() : undefined,
+          dateTo: f.dateTo ? new Date(f.dateTo + 'T23:59:59').toISOString() : undefined,
+          page: pg - 1,
+          size: PAGE_SIZE,
+          sortBy: sf,
+          sortDir: sd,
+        }),
+        transactionService.getMetrics(),
+      ])
+      setTransactions(result.content as unknown as Transaction[])
+      setTotalCount(result.totalElements)
+      setMetrics(m)
+      setApiAvailable(true)
+    } catch {
+      setApiAvailable(false)
+      loadMockData(pg)
+    } finally {
+      setLoading(false)
+    }
+  }, [loadMockData])
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900)
-    return () => clearTimeout(t)
-  }, [])
+    fetchData(activeFilters, page, sortField, sortDir)
+  }, [activeFilters, page, sortField, sortDir, fetchData])
 
   const handleSearch = useCallback(() => {
     setActiveFilters(filters)
@@ -42,55 +87,10 @@ function Transactions() {
     setPage(1)
   }, [sortField])
 
-  const filtered = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter((tx) => {
-      if (activeFilters.inboundSource && tx.inboundSource !== activeFilters.inboundSource) return false
-      if (activeFilters.messageKeyType && tx.messageKeyType !== activeFilters.messageKeyType) return false
-      if (activeFilters.messageValue && !tx.messageValue.toLowerCase().includes(activeFilters.messageValue.toLowerCase())) return false
-      if (activeFilters.channels.length > 0 && !activeFilters.channels.includes(tx.channel)) return false
-      if (activeFilters.dateFrom) {
-        const from = new Date(activeFilters.dateFrom)
-        if (new Date(tx.createdTime) < from) return false
-      }
-      if (activeFilters.dateTo) {
-        const to = new Date(activeFilters.dateTo)
-        to.setHours(23, 59, 59, 999)
-        if (new Date(tx.createdTime) > to) return false
-      }
-      return true
-    })
-  }, [activeFilters])
-
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      let cmp = 0
-      if (sortField === 'createdTime') {
-        cmp = new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime()
-      } else if (sortField === 'processingTimeMs') {
-        cmp = a.processingTimeMs - b.processingTimeMs
-      } else {
-        cmp = String(a[sortField]).localeCompare(String(b[sortField]))
-      }
-      return sortDir === 'asc' ? cmp : -cmp
-    })
-  }, [filtered, sortField, sortDir])
-
-  const paginated = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
-    return sorted.slice(start, start + PAGE_SIZE)
-  }, [sorted, page])
-
-  const metrics = useMemo(() => {
-    const success = filtered.filter((t) => t.status === 'Success').length
-    const failed = filtered.filter((t) => t.status === 'Failed').length
-    const slaBreaches = filtered.filter((t) => t.processingTimeMs > 3000).length
-    return { total: filtered.length, success, failed, slaBreaches }
-  }, [filtered])
-
   return (
     <PageContainer
       title="Alert Transactions"
-      subtitle="Monitor and analyze alert execution history across all channels."
+      subtitle={`Monitor and analyze alert execution history across all channels.${!apiAvailable ? ' (showing demo data)' : ''}`}
     >
       <div className="flex flex-col gap-6">
         <TransactionFilters
@@ -129,11 +129,11 @@ function Transactions() {
           </div>
 
           <TransactionsTable
-            data={paginated}
+            data={transactions}
             loading={loading}
             page={page}
             pageSize={PAGE_SIZE}
-            totalCount={sorted.length}
+            totalCount={totalCount}
             sortField={sortField}
             sortDir={sortDir}
             onPageChange={setPage}

@@ -76,8 +76,23 @@ function AlertsTemplate() {
   const handleFetch = async () => {
     setLoading(true)
     setResult(null)
-    await new Promise((r) => setTimeout(r, 1200))
-    setResult(MOCK_RESPONSE)
+    try {
+      const { templateService } = await import('../services/templateService')
+      const templates = await templateService.getAll({
+        name: templateName || undefined,
+        channel: selectedChannels[0] || undefined,
+        language: selectedLanguages[0] || undefined,
+        version: version || undefined,
+      })
+      if (templates.length > 0) {
+        const t = templates[0]
+        setResult({ rawTemplate: JSON.stringify(t, null, 2), htmlTemplate: t.htmlTemplate || MOCK_RESPONSE.htmlTemplate })
+      } else {
+        setResult(MOCK_RESPONSE)
+      }
+    } catch {
+      setResult(MOCK_RESPONSE)
+    }
     setFetched(true)
     setLoading(false)
   }
