@@ -7,7 +7,6 @@ import MessageSimulator from './pages/MessageSimulator'
 import BatchProcessing from './pages/BatchProcessing'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
-import ComponentDemo from './pages/ComponentDemo'
 import { ToastProvider } from './components/ui/Toast'
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
             <Route path="/message-simulator" element={<MessageSimulator />} />
             <Route path="/batch-processing" element={<BatchProcessing />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/components" element={<ComponentDemo />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
