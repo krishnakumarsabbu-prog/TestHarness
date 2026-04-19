@@ -9,7 +9,7 @@ interface PageContainerProps {
 
 function PageContainer({ title, subtitle, actions, children }: PageContainerProps) {
   return (
-    <div className="space-y-6" style={{ animation: 'slideUp 0.2s ease-out both' }}>
+    <div className="space-y-5" style={{ animation: 'slideUp 0.2s ease-out both' }}>
       <div className="flex items-start justify-between gap-4 pb-1">
         <div>
           <h1 className="page-title">{title}</h1>

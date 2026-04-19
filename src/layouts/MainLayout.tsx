@@ -9,7 +9,7 @@ function MainLayout() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-content mx-auto px-8 py-8">
+          <div className="px-6 py-6 xl:px-10 2xl:px-16">
             <Outlet />
           </div>
         </main>

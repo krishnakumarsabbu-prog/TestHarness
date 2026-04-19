@@ -36,20 +36,20 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-surface-200 shadow-soft overflow-hidden">
+    <div className="bg-ivory rounded-xl border border-surface-200 shadow-soft overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-surface-50/60 transition-colors duration-150"
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-surface-100/50 transition-colors duration-150"
       >
         <div className="flex items-center gap-2.5">
-          <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
           </svg>
-          <span className="text-sm font-semibold text-slate-800">Filters</span>
+          <span className="text-sm font-semibold text-warm-800">Filters</span>
         </div>
         <svg
-          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${expanded ? '' : 'rotate-180'}`}
+          className={`w-4 h-4 text-warm-400 transition-transform duration-200 ${expanded ? '' : 'rotate-180'}`}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -63,7 +63,7 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
         <div className="px-6 pb-6 border-t border-surface-100" style={{ animation: 'slideUp 0.15s ease-out both' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-slate-700">Inbound Source</label>
+              <label className="text-xs font-medium text-warm-700">Inbound Source</label>
               <select
                 value={filters.inboundSource}
                 onChange={(e) => set('inboundSource', e.target.value as InboundSource | '')}
@@ -77,7 +77,7 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-slate-700">Message Key Type</label>
+              <label className="text-xs font-medium text-warm-700">Message Key Type</label>
               <select
                 value={filters.messageKeyType}
                 onChange={(e) => set('messageKeyType', e.target.value as MessageKeyType | '')}
@@ -91,7 +91,7 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-slate-700">Message Value</label>
+              <label className="text-xs font-medium text-warm-700">Message Value</label>
               <input
                 type="text"
                 value={filters.messageValue}
@@ -102,7 +102,7 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-slate-700">Date From</label>
+              <label className="text-xs font-medium text-warm-700">Date From</label>
               <input
                 type="date"
                 value={filters.dateFrom}
@@ -112,7 +112,7 @@ function TransactionFilters({ filters, onChange, onSearch, onReset }: Transactio
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-slate-700">Date To</label>
+              <label className="text-xs font-medium text-warm-700">Date To</label>
               <input
                 type="date"
                 value={filters.dateTo}

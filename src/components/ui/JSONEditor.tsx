@@ -76,27 +76,27 @@ function JSONEditor({
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {(label || !readOnly) && (
         <div className="flex items-center justify-between">
-          {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+          {label && <label className="text-xs font-medium text-warm-700">{label}</label>}
           {!readOnly && (
             <div className="flex items-center gap-1 ml-auto">
               <button
                 type="button"
                 onClick={handleFormat}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-surface-100 border border-surface-200 transition-colors"
+                className="px-2.5 py-1 rounded-lg text-xs font-medium text-warm-500 hover:text-warm-700 hover:bg-surface-100 border border-surface-200 transition-colors"
               >
                 Format
               </button>
               <button
                 type="button"
                 onClick={handleMinify}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-surface-100 border border-surface-200 transition-colors"
+                className="px-2.5 py-1 rounded-lg text-xs font-medium text-warm-500 hover:text-warm-700 hover:bg-surface-100 border border-surface-200 transition-colors"
               >
                 Minify
               </button>
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-surface-100 border border-surface-200 transition-colors"
+                className="px-2.5 py-1 rounded-lg text-xs font-medium text-warm-500 hover:text-warm-700 hover:bg-surface-100 border border-surface-200 transition-colors"
               >
                 Copy
               </button>

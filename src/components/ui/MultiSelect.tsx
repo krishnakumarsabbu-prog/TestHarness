@@ -54,12 +54,12 @@ function MultiSelect({
   const borderClass = error
     ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-100'
     : open
-    ? 'border-primary-400 ring-2 ring-primary-100'
+    ? 'border-[#3898ec] ring-2 ring-[#3898ec]/15'
     : 'border-surface-300'
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`} ref={containerRef}>
-      <label className="text-sm font-medium text-slate-700">
+      <label className="text-xs font-medium text-warm-700">
         {label}
         {required && <span className="ml-1 text-danger-500">*</span>}
       </label>
@@ -68,11 +68,11 @@ function MultiSelect({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`w-full px-3.5 py-2.5 rounded-xl border bg-white text-sm text-left transition-colors duration-150 flex items-center justify-between gap-2 ${borderClass} ${selected.length === 0 ? 'text-slate-400' : 'text-slate-800'}`}
+          className={`w-full px-3 py-2 rounded-xl border bg-ivory text-sm text-left transition-colors duration-150 flex items-center justify-between gap-2 ${borderClass} ${selected.length === 0 ? 'text-warm-400' : 'text-warm-900'}`}
         >
           <span className="truncate">{displayValue}</span>
           <svg
-            className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-warm-400 shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -84,7 +84,7 @@ function MultiSelect({
 
         {open && (
           <div
-            className="absolute z-20 top-full mt-1.5 left-0 right-0 bg-white rounded-xl border border-surface-200 shadow-soft-md overflow-hidden"
+            className="absolute z-20 top-full mt-1.5 left-0 right-0 bg-ivory rounded-xl border border-surface-200 shadow-soft-md overflow-hidden"
             style={{ animation: 'slideUp 0.12s ease-out both' }}
           >
             {options.map((option) => {
@@ -94,13 +94,13 @@ function MultiSelect({
                   key={option}
                   type="button"
                   onClick={() => toggle(option)}
-                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-left hover:bg-surface-50 active:bg-surface-100 transition-colors duration-100"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left hover:bg-surface-100 active:bg-surface-200 transition-colors duration-100"
                 >
                   <span
                     className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors duration-150 ${
                       isSelected
-                        ? 'bg-primary-600 border-primary-600'
-                        : 'border-surface-300 bg-white'
+                        ? 'bg-primary-500 border-primary-500'
+                        : 'border-surface-300 bg-ivory'
                     }`}
                   >
                     {isSelected && (
@@ -109,7 +109,7 @@ function MultiSelect({
                       </svg>
                     )}
                   </span>
-                  <span className={isSelected ? 'text-slate-800 font-medium' : 'text-slate-600'}>{option}</span>
+                  <span className={isSelected ? 'text-warm-900 font-medium' : 'text-warm-600'}>{option}</span>
                 </button>
               )
             })}
@@ -122,7 +122,7 @@ function MultiSelect({
           {selected.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary-50 text-primary-700 text-xs font-medium border border-primary-100"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary-50 text-primary-600 text-xs font-medium border border-primary-100"
             >
               {s}
               <button
@@ -140,7 +140,7 @@ function MultiSelect({
       )}
 
       {error && <p className="text-xs text-danger-600">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-400">{hint}</p>}
+      {hint && !error && <p className="text-xs text-warm-400">{hint}</p>}
     </div>
   )
 }

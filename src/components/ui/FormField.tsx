@@ -31,7 +31,7 @@ function FormField(props: FormFieldProps) {
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label className="text-sm font-medium text-slate-700">
+      <label className="text-xs font-medium text-warm-700">
         {label}
         {required && <span className="ml-1 text-danger-500">*</span>}
       </label>
@@ -68,7 +68,7 @@ function FormField(props: FormFieldProps) {
           {error}
         </p>
       )}
-      {hint && !error && <p className="text-xs text-slate-400 leading-relaxed">{hint}</p>}
+      {hint && !error && <p className="text-xs text-warm-400 leading-relaxed">{hint}</p>}
     </div>
   )
 }

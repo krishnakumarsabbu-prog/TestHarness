@@ -18,19 +18,19 @@ interface MetricCardsProps {
 
 function MetricCard({ metric, loading }: { metric: Metric; loading?: boolean }) {
   return (
-    <div className={`bg-white rounded-2xl border ${metric.borderClass} shadow-soft p-5 flex items-start gap-4`}>
-      <div className={`w-11 h-11 rounded-xl ${metric.bgClass} flex items-center justify-center shrink-0`}>
+    <div className={`bg-ivory rounded-xl border ${metric.borderClass} shadow-soft p-4 flex items-start gap-3`}>
+      <div className={`w-9 h-9 rounded-lg ${metric.bgClass} flex items-center justify-center shrink-0`}>
         <span className={metric.colorClass}>{metric.icon}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{metric.label}</p>
+        <p className="text-xs font-semibold text-warm-500 uppercase tracking-wider">{metric.label}</p>
         {loading ? (
-          <div className="skeleton-shimmer h-7 w-16 rounded-lg mt-1.5" />
+          <div className="skeleton-shimmer h-6 w-16 rounded-lg mt-1.5" />
         ) : (
-          <p className="text-2xl font-bold text-slate-900 mt-0.5 tabular-nums">{metric.value.toLocaleString()}</p>
+          <p className="text-xl font-bold text-warm-900 mt-0.5 tabular-nums">{metric.value.toLocaleString()}</p>
         )}
         {metric.trend && !loading && (
-          <p className="text-xs text-slate-400 mt-0.5">{metric.trend}</p>
+          <p className="text-xs text-warm-400 mt-0.5">{metric.trend}</p>
         )}
       </div>
     </div>

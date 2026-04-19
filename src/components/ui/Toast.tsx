@@ -45,26 +45,26 @@ const typeStyles: Record<ToastType, { wrapper: string; icon: string }> = {
   success: { wrapper: 'border-success-500/20 bg-success-50', icon: 'text-success-600 bg-success-100' },
   error: { wrapper: 'border-danger-500/20 bg-danger-50', icon: 'text-danger-600 bg-danger-100' },
   warning: { wrapper: 'border-warning-500/20 bg-warning-50', icon: 'text-warning-600 bg-warning-100' },
-  info: { wrapper: 'border-primary-500/20 bg-primary-50', icon: 'text-primary-600 bg-primary-100' },
+  info: { wrapper: 'border-primary-400/20 bg-primary-50', icon: 'text-primary-600 bg-primary-100' },
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   const styles = typeStyles[toast.type]
   return (
     <div
-      className={`flex items-start gap-3 w-80 p-4 rounded-2xl border shadow-soft-md ${styles.wrapper}`}
+      className={`flex items-start gap-3 w-72 p-3.5 rounded-xl border shadow-soft-md ${styles.wrapper}`}
       style={{ animation: 'slideUp 0.2s cubic-bezier(0.34,1.2,0.64,1) both' }}
     >
-      <span className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${styles.icon}`}>
+      <span className={`flex items-center justify-center w-6 h-6 rounded-lg shrink-0 ${styles.icon}`}>
         {icons[toast.type]}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-800">{toast.title}</p>
-        {toast.message && <p className="mt-0.5 text-xs text-slate-500 leading-relaxed">{toast.message}</p>}
+        <p className="text-sm font-semibold text-warm-900">{toast.title}</p>
+        {toast.message && <p className="mt-0.5 text-xs text-warm-500 leading-relaxed">{toast.message}</p>}
       </div>
       <button
         onClick={onDismiss}
-        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/60 transition-all duration-150 active:scale-90 shrink-0"
+        className="p-1 rounded-lg text-warm-400 hover:text-warm-700 hover:bg-white/60 transition-all duration-150 active:scale-90 shrink-0"
         aria-label="Dismiss"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

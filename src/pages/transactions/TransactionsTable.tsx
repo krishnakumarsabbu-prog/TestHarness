@@ -24,8 +24,8 @@ const statusConfig: Record<TransactionStatus, { dot: string; text: string; bg: s
 
 const channelConfig: Record<string, { icon: React.ReactNode; bg: string; text: string }> = {
   Email: {
-    bg: 'bg-primary-50 text-primary-700',
-    text: 'text-primary-700',
+    bg: 'bg-primary-50 text-primary-600',
+    text: 'text-primary-600',
     icon: (
       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -51,8 +51,8 @@ const channelConfig: Record<string, { icon: React.ReactNode; bg: string; text: s
     ),
   },
   Webhook: {
-    bg: 'bg-slate-100 text-slate-700',
-    text: 'text-slate-700',
+    bg: 'bg-warm-200 text-warm-700',
+    text: 'text-warm-700',
     icon: (
       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
@@ -128,32 +128,32 @@ function TransactionsTable({
 
   return (
     <div className="flex flex-col gap-0">
-      <div className="overflow-x-auto rounded-2xl border border-surface-200 shadow-soft">
+      <div className="overflow-x-auto rounded-xl border border-surface-200 shadow-soft">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-surface-50 border-b border-surface-200">
+            <tr className="bg-surface-100 border-b border-surface-200">
               {columns.map((col) => (
                 <th
                   key={col.label || 'actions'}
                   style={{ width: col.width }}
-                  className="px-4 py-3 text-left"
+                  className="px-4 py-2.5 text-left"
                 >
                   {col.field ? (
                     <button
                       onClick={() => onSort(col.field!)}
-                      className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors"
+                      className="flex items-center gap-1 text-xs font-semibold text-warm-500 uppercase tracking-wider hover:text-warm-800 transition-colors"
                     >
                       {col.label}
                       <SortIcon field={col.field} sortField={sortField} sortDir={sortDir} />
                     </button>
                   ) : (
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{col.label}</span>
+                    <span className="text-xs font-semibold text-warm-500 uppercase tracking-wider">{col.label}</span>
                   )}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-surface-100">
+          <tbody className="bg-ivory divide-y divide-surface-100">
             {loading ? (
               Array.from({ length: pageSize }).map((_, i) => (
                 <tr key={i} style={{ opacity: 1 - i * 0.1 }}>
@@ -174,8 +174,8 @@ function TransactionsTable({
                       </svg>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold text-slate-600">No transactions found</p>
-                      <p className="text-xs text-slate-400">Try adjusting your filters or search criteria</p>
+                      <p className="text-sm font-semibold text-warm-600">No transactions found</p>
+                      <p className="text-xs text-warm-400">Try adjusting your filters or search criteria</p>
                     </div>
                   </div>
                 </td>
@@ -195,11 +195,11 @@ function TransactionsTable({
                         : 'hover:bg-surface-50/80'
                     }`}
                   >
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-slate-600 bg-surface-100 px-2 py-0.5 rounded">{tx.messageId}</span>
+                    <td className="px-4 py-2.5">
+                      <span className="font-mono text-xs text-warm-600 bg-surface-200 px-2 py-0.5 rounded">{tx.messageId}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-slate-800">{tx.alertName}</span>
+                    <td className="px-4 py-2.5">
+                      <span className="text-sm font-medium text-warm-800">{tx.alertName}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-medium ${ch.bg}`}>
@@ -213,9 +213,9 @@ function TransactionsTable({
                         {tx.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{formatDate(tx.createdTime)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-medium tabular-nums ${tx.processingTimeMs > 3000 ? 'text-warning-600' : 'text-slate-600'}`}>
+                    <td className="px-4 py-2.5 text-xs text-warm-500">{formatDate(tx.createdTime)}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`text-xs font-medium tabular-nums ${tx.processingTimeMs > 3000 ? 'text-warning-600' : 'text-warm-600'}`}>
                         {tx.processingTimeMs.toLocaleString()} ms
                         {tx.processingTimeMs > 3000 && (
                           <span className="ml-1 text-warning-500" title="SLA breach">!</span>
@@ -237,14 +237,14 @@ function TransactionsTable({
 
       {totalCount > 0 && (
         <div className="flex items-center justify-between px-1 pt-3">
-          <p className="text-xs text-slate-400">
-            Showing <span className="font-medium text-slate-600">{start}–{end}</span> of <span className="font-medium text-slate-600">{totalCount}</span> transactions
+          <p className="text-xs text-warm-400">
+            Showing <span className="font-medium text-warm-600">{start}–{end}</span> of <span className="font-medium text-warm-600">{totalCount}</span> transactions
           </p>
           <div className="flex items-center gap-1">
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg text-warm-400 hover:text-warm-700 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -265,10 +265,10 @@ function TransactionsTable({
                   <button
                     key={item}
                     onClick={() => onPageChange(item)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${
                       item === page
-                        ? 'bg-primary-600 text-white shadow-soft-sm'
-                        : 'text-slate-500 hover:bg-surface-100 hover:text-slate-800'
+                        ? 'bg-primary-500 text-white shadow-soft-sm'
+                        : 'text-warm-500 hover:bg-surface-100 hover:text-warm-800'
                     }`}
                   >
                     {item}
@@ -279,7 +279,7 @@ function TransactionsTable({
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg text-warm-400 hover:text-warm-700 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />

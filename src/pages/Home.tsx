@@ -1,9 +1,9 @@
 function Home() {
   return (
-    <div className="py-12">
-      <h1 className="text-4xl font-semibold text-gray-900 mb-4">Welcome</h1>
-      <p className="text-lg text-gray-600 max-w-xl">
-        Your project is ready. Start building by editing the files in the <code className="text-sm bg-gray-100 px-1.5 py-0.5 rounded font-mono">src/</code> directory.
+    <div className="py-10">
+      <h1 className="page-title mb-3">Welcome</h1>
+      <p className="text-sm text-warm-600 max-w-xl leading-relaxed">
+        Your project is ready. Start building by editing the files in the <code className="text-xs bg-surface-200 px-1.5 py-0.5 rounded font-mono text-warm-700">src/</code> directory.
       </p>
     </div>
   )

@@ -13,7 +13,7 @@
   }
 
   body {
-    @apply bg-surface-50 text-slate-800 antialiased;
+    @apply bg-surface-50 text-warm-900 antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -22,12 +22,12 @@
   h1, h2, h3, h4, h5, h6 {
     line-height: 1.25;
     font-weight: 600;
-    color: theme('colors.slate.900');
+    color: #141413;
     letter-spacing: -0.01em;
   }
 
   a {
-    @apply text-primary-600 hover:text-primary-700 transition-colors duration-200;
+    @apply text-primary-500 hover:text-primary-600 transition-colors duration-200;
   }
 
   img, video {
@@ -36,12 +36,12 @@
   }
 
   ::selection {
-    background-color: theme('colors.primary.100');
-    color: theme('colors.primary.900');
+    background-color: #fae3d8;
+    color: #5e2910;
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.primary.400');
+    outline: 2px solid #3898ec;
     outline-offset: 2px;
     border-radius: 0.25rem;
   }
@@ -55,37 +55,44 @@
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl shadow-soft border border-surface-200 p-6;
+    @apply bg-ivory rounded-xl shadow-soft border border-surface-100 p-5;
   }
 
   .card-sm {
-    @apply bg-white rounded-xl shadow-soft-sm border border-surface-200 p-4;
+    @apply bg-ivory rounded-lg shadow-soft-sm border border-surface-100 p-4;
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium
-           hover:bg-primary-700 active:bg-primary-800 transition-all duration-150
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium
+           hover:bg-primary-600 active:bg-primary-700 transition-all duration-150
            shadow-soft-sm hover:shadow-soft active:scale-[0.98];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-100 text-slate-700 text-sm font-medium
-           hover:bg-surface-200 active:bg-surface-300 border border-surface-200 transition-all duration-150
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-200 text-warm-900 text-sm font-medium
+           hover:bg-surface-300 active:bg-surface-400 border border-surface-300 transition-all duration-150
            shadow-soft-sm hover:shadow active:scale-[0.98];
   }
 
   .page-title {
-    @apply text-2xl font-semibold text-slate-900 tracking-tight;
+    @apply text-2xl font-semibold text-warm-900 tracking-tight;
+    font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
   }
 
   .page-subtitle {
-    @apply mt-1 text-sm text-slate-500 leading-relaxed;
+    @apply mt-1 text-sm text-warm-600 leading-relaxed;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-warm-800 tracking-tight;
+    font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
   }
 
   .input {
-    @apply w-full px-3.5 py-2.5 rounded-xl border border-surface-300 bg-white text-slate-800 text-sm
-           placeholder:text-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100
-           transition-all duration-150 hover:border-slate-400/30;
+    @apply w-full px-3 py-2 rounded-xl border border-surface-300 bg-ivory text-warm-900 text-sm
+           placeholder:text-warm-400 focus:outline-none focus:border-[#3898ec] focus:ring-2 focus:ring-[#3898ec]/15
+           transition-all duration-150 hover:border-warm-400;
   }
 
   .skeleton {
@@ -119,9 +126,9 @@
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    theme('colors.surface.100') 25%,
-    theme('colors.surface.200') 50%,
-    theme('colors.surface.100') 75%
+    #f0eee6 25%,
+    #e8e6dc 50%,
+    #f0eee6 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
