@@ -1,18 +1,7 @@
-import { api } from './apiClient'
+import { db } from '../store/memoryDb'
+import type { BatchJob } from '../store/memoryDb'
 
-export interface BatchJob {
-  id: string
-  name: string
-  type: string
-  status: 'pending' | 'running' | 'completed' | 'failed'
-  config: Record<string, unknown>
-  result?: Record<string, unknown>
-  errorMessage?: string
-  startedAt?: string
-  completedAt?: string
-  createdAt: string
-  updatedAt: string
-}
+export type { BatchJob }
 
 export interface BatchJobRequest {
   name: string
@@ -21,13 +10,20 @@ export interface BatchJobRequest {
 }
 
 export const batchJobService = {
-  getAll: () => api.get<BatchJob[]>('/api/batch-jobs'),
+  getAll: (): Promise<BatchJob[]> =>
+    Promise.resolve(db.batchJobs.getAll()),
 
-  getById: (id: string) => api.get<BatchJob>(`/api/batch-jobs/${id}`),
+  getById: (id: string): Promise<BatchJob | undefined> =>
+    Promise.resolve(db.batchJobs.getById(id)),
 
-  create: (req: BatchJobRequest) => api.post<BatchJob>('/api/batch-jobs', req),
+  create: (req: BatchJobRequest): Promise<BatchJob> =>
+    Promise.resolve(db.batchJobs.create(req)),
 
-  execute: (id: string) => api.post<BatchJob>(`/api/batch-jobs/${id}/execute`, {}),
+  execute: (id: string): Promise<BatchJob | undefined> =>
+    Promise.resolve(db.batchJobs.execute(id)),
 
-  delete: (id: string) => api.delete<void>(`/api/batch-jobs/${id}`),
+  delete: (id: string): Promise<void> => {
+    db.batchJobs.delete(id)
+    return Promise.resolve()
+  },
 }

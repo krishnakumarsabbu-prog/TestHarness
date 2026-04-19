@@ -1,11 +1,11 @@
 package com.alertsportal.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alertsportal.config.JsonListConverter;
+import com.alertsportal.config.JsonMapConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -29,11 +29,11 @@ public class SimulationLog {
     @Column(nullable = false)
     private String channel;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "clob")
     private Map<String, Object> config;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "clob")
     private String payload;
 
     @Column(nullable = false)
@@ -48,8 +48,8 @@ public class SimulationLog {
     @Column
     private String message;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonListConverter.class)
+    @Column(columnDefinition = "clob")
     private List<Map<String, String>> logs;
 
     @Column(name = "created_at")

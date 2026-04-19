@@ -34,7 +34,7 @@ function BatchProcessing() {
     setExecuting(id)
     try {
       const updated = await batchJobService.execute(id)
-      setJobs(prev => prev.map(j => j.id === id ? updated : j))
+      setJobs(prev => prev.map(j => j.id === id ? (updated ?? j) : j))
     } catch {
     } finally {
       setExecuting(null)

@@ -1,11 +1,10 @@
 package com.alertsportal.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alertsportal.config.JsonMapConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -31,12 +30,12 @@ public class BatchJob {
     @Column(nullable = false)
     private String status = "pending";
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "clob")
     private Map<String, Object> config;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "clob")
     private Map<String, Object> result;
 
     @Column(name = "error_message")

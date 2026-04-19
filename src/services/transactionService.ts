@@ -1,4 +1,5 @@
-import { api } from './apiClient'
+import { db } from '../store/memoryDb'
+import type { Transaction as MockTransaction } from '../pages/transactions/mockData'
 
 export interface TransactionLog {
   timestamp: string
@@ -6,23 +7,7 @@ export interface TransactionLog {
   message: string
 }
 
-export interface Transaction {
-  id: string
-  messageId: string
-  alertName: string
-  channel: string
-  status: string
-  createdTime: string
-  processingTimeMs: number
-  inboundSource: string
-  messageKeyType: string
-  messageValue: string
-  templateUsed: string
-  triggerSource: string
-  deliveryStatus: string
-  payload: Record<string, unknown>
-  logs: TransactionLog[]
-}
+export type Transaction = MockTransaction
 
 export interface TransactionPage {
   content: Transaction[]
@@ -54,28 +39,18 @@ export interface TransactionFilters {
 }
 
 export const transactionService = {
-  getAll: (filters: TransactionFilters = {}) => {
-    const params = new URLSearchParams()
-    if (filters.inboundSource) params.set('inboundSource', filters.inboundSource)
-    if (filters.messageKeyType) params.set('messageKeyType', filters.messageKeyType)
-    if (filters.channel) params.set('channel', filters.channel)
-    if (filters.status) params.set('status', filters.status)
-    if (filters.dateFrom) params.set('dateFrom', filters.dateFrom)
-    if (filters.dateTo) params.set('dateTo', filters.dateTo)
-    if (filters.page !== undefined) params.set('page', String(filters.page))
-    if (filters.size !== undefined) params.set('size', String(filters.size))
-    if (filters.sortBy) params.set('sortBy', filters.sortBy)
-    if (filters.sortDir) params.set('sortDir', filters.sortDir)
-    return api.get<TransactionPage>(`/api/transactions?${params.toString()}`)
-  },
+  getAll: (filters: TransactionFilters = {}): Promise<TransactionPage> =>
+    Promise.resolve(db.transactions.getAll(filters) as TransactionPage),
 
-  getById: (id: string) => api.get<Transaction>(`/api/transactions/${id}`),
+  getById: (id: string): Promise<Transaction | undefined> =>
+    Promise.resolve(db.transactions.getById(id)),
 
-  getMetrics: () => api.get<TransactionMetrics>('/api/transactions/metrics'),
+  getMetrics: (): Promise<TransactionMetrics> =>
+    Promise.resolve(db.transactions.getMetrics()),
 
-  create: (req: Partial<Transaction>) =>
-    api.post<Transaction>('/api/transactions', req),
+  create: (req: Partial<Transaction>): Promise<Transaction> =>
+    Promise.resolve(req as Transaction),
 
-  update: (id: string, req: Partial<Transaction>) =>
-    api.put<Transaction>(`/api/transactions/${id}`, req),
+  update: (id: string, req: Partial<Transaction>): Promise<Transaction> =>
+    Promise.resolve({ ...req, id } as Transaction),
 }

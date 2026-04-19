@@ -1,15 +1,16 @@
 package com.alertsportal.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alertsportal.config.JsonListConverter;
+import com.alertsportal.config.JsonMapConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +21,7 @@ public class AlertTemplate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private java.util.UUID id;
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -36,21 +37,21 @@ public class AlertTemplate {
 
     private String subject;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "clob")
     private String body;
 
-    @Column(name = "html_template", columnDefinition = "text")
+    @Column(name = "html_template", columnDefinition = "clob")
     private String htmlTemplate;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonListConverter.class)
+    @Column(columnDefinition = "clob")
     private List<String> variables;
 
     @Column(nullable = false)
     private String status = "active";
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "clob")
     private Map<String, Object> metadata;
 
     @Column(name = "created_at")

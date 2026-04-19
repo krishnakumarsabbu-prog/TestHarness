@@ -1,11 +1,10 @@
 package com.alertsportal.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alertsportal.config.JsonListConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -29,8 +28,8 @@ public class FormConfig {
     @Column
     private String description;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonListConverter.class)
+    @Column(columnDefinition = "clob")
     private List<Map<String, Object>> fields;
 
     @Column(name = "created_at")

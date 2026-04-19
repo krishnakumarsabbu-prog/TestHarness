@@ -1,4 +1,5 @@
-import { api } from './apiClient'
+import { db } from '../store/memoryDb'
+import { simulateSend } from '../pages/message-simulator/mockSimulate'
 import type { Scenario, SimulatorMessage, SimulationResponse } from '../pages/message-simulator/types'
 
 export interface SimulationScenarioRequest {
@@ -27,29 +28,52 @@ export interface SimulationApiResponse {
 }
 
 export const simulationService = {
-  getAllScenarios: () => api.get<Scenario[]>('/api/simulate/scenarios'),
+  getAllScenarios: (): Promise<Scenario[]> =>
+    Promise.resolve(db.scenarios.getAll()),
 
-  getScenarioById: (id: string) => api.get<Scenario>(`/api/simulate/scenarios/${id}`),
+  getScenarioById: (id: string): Promise<Scenario | undefined> =>
+    Promise.resolve(db.scenarios.getById(id)),
 
-  createScenario: (req: SimulationScenarioRequest) =>
-    api.post<Scenario>('/api/simulate/scenarios', req),
+  createScenario: (req: SimulationScenarioRequest): Promise<Scenario> =>
+    Promise.resolve(
+      db.scenarios.create({
+        name: req.name,
+        description: req.description || '',
+        channel: req.channel as Scenario['channel'],
+        config: req.config as unknown as Scenario['config'],
+        payload: req.payload,
+      })
+    ),
 
-  updateScenario: (id: string, req: SimulationScenarioRequest) =>
-    api.put<Scenario>(`/api/simulate/scenarios/${id}`, req),
+  updateScenario: (id: string, req: SimulationScenarioRequest): Promise<Scenario | undefined> =>
+    Promise.resolve(db.scenarios.update(id, {
+      ...req,
+      channel: req.channel as Scenario['channel'],
+      config: req.config as unknown as Scenario['config'],
+    })),
 
-  deleteScenario: (id: string) => api.delete<void>(`/api/simulate/scenarios/${id}`),
-
-  send: (msg: SimulatorMessage, scenarioId?: string): Promise<SimulationApiResponse> => {
-    const req: SimulateRequest = {
-      channel: msg.channel,
-      config: msg.config as unknown as Record<string, unknown>,
-      payload: msg.payload,
-      scenarioId,
-    }
-    return api.post<SimulationApiResponse>('/api/simulate/send', req)
+  deleteScenario: (id: string): Promise<void> => {
+    db.scenarios.delete(id)
+    return Promise.resolve()
   },
 
-  getRecentLogs: () => api.get<SimulationApiResponse[]>('/api/simulate/logs'),
+  send: async (msg: SimulatorMessage): Promise<SimulationApiResponse> => {
+    const result = await simulateSend(msg)
+    const log: SimulationApiResponse = {
+      status: result.status,
+      httpStatus: result.httpStatus,
+      responseTime: result.responseTime,
+      message: result.message,
+      logs: result.logs,
+      timestamp: result.timestamp,
+      logId: `log-${Date.now()}`,
+    }
+    db.simLogs.add(log)
+    return log
+  },
+
+  getRecentLogs: (): Promise<SimulationApiResponse[]> =>
+    Promise.resolve(db.simLogs.getRecent()),
 }
 
 export function toSimulationResponse(res: SimulationApiResponse): SimulationResponse {

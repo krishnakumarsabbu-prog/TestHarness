@@ -1,11 +1,11 @@
 package com.alertsportal.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alertsportal.config.JsonListConverter;
+import com.alertsportal.config.JsonMapConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -59,12 +59,12 @@ public class Transaction {
     @Column(name = "delivery_status")
     private String deliveryStatus;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "clob")
     private Map<String, Object> payload;
 
-    @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = JsonListConverter.class)
+    @Column(columnDefinition = "clob")
     private List<Map<String, String>> logs;
 
     @PrePersist

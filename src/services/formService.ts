@@ -1,4 +1,4 @@
-import { api } from './apiClient'
+import { db } from '../store/memoryDb'
 import type { SavedFormConfig, AlertFormMapping } from '../store/formConfigStore'
 
 export interface FormConfigRequest {
@@ -14,25 +14,40 @@ export interface AlertFormMappingRequest {
 }
 
 export const formService = {
-  getAllForms: () => api.get<SavedFormConfig[]>('/api/forms'),
+  getAllForms: (): Promise<SavedFormConfig[]> =>
+    Promise.resolve(db.formConfigs.getAll()),
 
-  getFormById: (id: string) => api.get<SavedFormConfig>(`/api/forms/${id}`),
+  getFormById: (id: string): Promise<SavedFormConfig | undefined> =>
+    Promise.resolve(db.formConfigs.getById(id)),
 
-  createForm: (req: FormConfigRequest) =>
-    api.post<SavedFormConfig>('/api/forms', req),
+  createForm: (req: FormConfigRequest): Promise<SavedFormConfig> =>
+    Promise.resolve(
+      db.formConfigs.create({
+        name: req.name,
+        description: req.description || '',
+        fields: req.fields,
+      })
+    ),
 
-  updateForm: (id: string, req: FormConfigRequest) =>
-    api.put<SavedFormConfig>(`/api/forms/${id}`, req),
+  updateForm: (id: string, req: FormConfigRequest): Promise<SavedFormConfig | undefined> =>
+    Promise.resolve(db.formConfigs.update(id, req)),
 
-  deleteForm: (id: string) => api.delete<void>(`/api/forms/${id}`),
+  deleteForm: (id: string): Promise<void> => {
+    db.formConfigs.delete(id)
+    return Promise.resolve()
+  },
 
-  getAllMappings: () => api.get<AlertFormMapping[]>('/api/forms/mappings'),
+  getAllMappings: (): Promise<AlertFormMapping[]> =>
+    Promise.resolve(db.formMappings.getAll()),
 
-  createMapping: (req: AlertFormMappingRequest) =>
-    api.post<AlertFormMapping>('/api/forms/mappings', req),
+  createMapping: (req: AlertFormMappingRequest): Promise<AlertFormMapping> =>
+    Promise.resolve(db.formMappings.create(req)),
 
-  deleteMapping: (id: string) => api.delete<void>(`/api/forms/mappings/${id}`),
+  deleteMapping: (id: string): Promise<void> => {
+    db.formMappings.delete(id)
+    return Promise.resolve()
+  },
 
-  resolveForm: (alertType: string, sourceType: string) =>
-    api.get<SavedFormConfig>(`/api/forms/resolve?alertType=${encodeURIComponent(alertType)}&sourceType=${encodeURIComponent(sourceType)}`),
+  resolveForm: (alertType: string, sourceType: string): Promise<SavedFormConfig | undefined> =>
+    Promise.resolve(db.formMappings.resolve(alertType, sourceType)),
 }
